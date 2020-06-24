@@ -11,11 +11,11 @@ const beforeAfter = require('./beforeAfter')
 const jwt = require('./jwt')
 const session = require('express-session')
 const path = require('path')
-const getRouter = async(port, staticPath = './public') => {
+const getRouter = async(port, staticPath = './public', routes, require2) => {
   try {
     // 產生express app 與router, server
     const { router, app, server } = await createAPIServer(port, staticPath)
-    await getRoutes(router, global.routes)
+    await getRoutes(router, routes, require2)
     return { router, app, server }
   } catch (e) {
     console.log(e)
@@ -61,7 +61,7 @@ const createAPIServer = async(apiPort = 3138, staticPath = './public') => {
   return { router, app, server }
 }
 // 依照routesConfig設定 載入指定的route檔案
-const getRoutes = async(app, routesConfig) => {
+const getRoutes = async(app, routesConfig, require2) => {
   try {
     // routesConfig = modifyConfigData(routesConfig)
     for (let i = 0; i < routesConfig.length; i++) {
@@ -69,7 +69,7 @@ const getRoutes = async(app, routesConfig) => {
       const files = await loadFolderFiles(routeData.dir, 'js', 'name')
       files.forEach(filename => {
         const requirePath = `${routeData.dir}/${filename}`
-        const RouteClass = global.require2(requirePath)
+        const RouteClass = require2(requirePath)
         const opt = { app, ns: routeData.ns, host: routeData.host, db: routeData.db, filename: requirePath }
         new RouteClass(opt)
       })
@@ -80,8 +80,7 @@ const getRoutes = async(app, routesConfig) => {
   }
 }
 // 將routes設定 轉換dir 轉為絕對路徑, 並產生private 與public目錄設定
-const modifyRoutesConfig = (routesConfig) => {
-  const binPath = global.dir.bin
+const modifyRoutesConfig = (routesConfig, binPath) => {
   const result = []
   routesConfig.forEach(item => {
     // enable 的目錄才會載入

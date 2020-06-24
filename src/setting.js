@@ -56,6 +56,42 @@ module.exports = {
         common: 'sample api',
         enable: true
       }]
+    },
+    {
+      id: 'mqHost',
+      path: path.resolve('./conf/mqHost.yml'),
+      default: {
+        rabbitLocal: {
+          config: {
+            protocol: 'amqp',
+            hostname: '127.0.0.1',
+            port: 5672,
+            username: 'admin',
+            password: '5578360',
+            frameMax: 0,
+            heartbeat: 0,
+            vhost: '/'
+          },
+          channel: {
+            main: {
+              isConfirm: false,
+              queue: [
+                { id: 'agent',
+                  common: '發送agent廣播用',
+                  option: { durable: false }
+                }
+              ],
+              exchange: [
+                { id: 'ex_hello',
+                  common: '測試用',
+                  type: 'direct',
+                  option: { durable: false }
+                }
+              ]
+            }
+          }
+        }
+      }
     }
   ],
   dir: {
