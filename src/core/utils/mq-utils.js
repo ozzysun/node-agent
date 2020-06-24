@@ -44,7 +44,7 @@ const queueReceive = async(channel, queueArray) => {
   })
 }
 // 發送訊息
-const queueSend = async(channel, { queue = 'main', data, option = null}) => {
+const queueSend = async(channel, { queue = 'main', data, option = null }) => {
   const sendObj = {
     type: typeof data,
     data
@@ -80,23 +80,6 @@ const getChannelById = async(config, channel) => {
     }
   }
   return currentChannel
-}
-// 取得允許使用的queue與exchange清單
-const getAllow = async(config, channel) => {
-  const current = config.channel[channel]
-  if (current === undefined) return null
-  const result = { queue: [], exchange: [] }
-  if (current.queue && Array.isArray(current.queue)) {
-    current.queue.forEach(item => {
-      result.queue.push(item.id)
-    })
-  }
-  if (current.exchange && Array.isArray(current.exchange)) {
-    current.exchange.forEach(item => {
-      result.exchange.push(item.id)
-    })
-  }
-  return result
 }
 const trace = (info) => {
   if (typeof info === 'string') {

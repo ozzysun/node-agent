@@ -155,42 +155,15 @@
 5. 建立db table model
      - url: http://localhost:3138/global/model/build/:host/:db
      - method: get
-### Graphql 使用
-1. 自訂ObjectType
-     - src/graphql/schema/types 目錄管理自訂type
-2. 管理query
-     - src/graphql/schema/query 目錄管理query功能
-3. 通用graphal使用
-     1. 建立 data model http://localhost:3138/global/model/build/:host/:db
-     2. conf/index.yml 設定graphql [{ host:主機 dbs:[] 允許操作的db]
-     3. 查詢使用方式
-     ```
-      {
-        host名稱{
-          db名稱{
-               table名稱(page:1, perPage:10) {
-                    欄位..
-               }
-          }
-        }
-      }
-     ```
-### REST 與Graphql 對照
-1. 透過通用API查詢
-   ```
-   http://localhost:3138/global/db/:myHost/:myDb/:myTable?attributes=column1,column2
-   ```
-2. 透過graphql查詢
-   ```
-   myHost {
-    myDb {
-      myTable(page:1, perPage:10) {
-        column1
-        column2
-      }
-    }
-  }
-   ```
+### Docker操作
+- docker build
+  docker build -t node-agent .
+- docker run
+  docker run --name=myagent -p 54321:54321 -d node-agent
+- docker build image file
+  docker save node-mq-socket > ~/node-agent.tar
+- docker load image file
+  docker load -i node-agent.tar
 
         
    
