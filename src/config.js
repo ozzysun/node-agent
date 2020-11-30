@@ -1,5 +1,6 @@
 const { modifyRoutesConfig } = require('./core/net/router')
 const { isFileExist, readYAML, writeYAML } = require(('./core/utils/file'))
+const { argv } = require('yargs')
 // 載入外部conf下的config檔案 setting:要傳入的setting內容, modifier:要overrid config設定檔的資訊
 const loadConfig = async(setting, configModifier = null) => {
   // 依照setting載入所有file
@@ -40,4 +41,21 @@ const createConfFolder = async(setting = null) => {
     return false
   }
 }
-module.exports = { loadConfig, createConfFolder }
+const getArgs = () => {
+  // mq args
+  const hostId = argv.host || argv.h || null
+  const channelId = argv.cannel || argv.c || null
+  const queueId = argv.queue || argv.q || null
+  // 若同時設定 enable與disable則以 disable生效
+  let enable = null
+  if (argv.disable) {
+    enable = false
+  } else if (argv.enable) {
+    enable = true
+  }
+  // socket args
+  const port = argv.port || argv.p || null
+  const result = { hostId, channelId, queueId, port, enable }
+  return result
+}
+module.exports = { loadConfig, createConfFolder, getArgs }

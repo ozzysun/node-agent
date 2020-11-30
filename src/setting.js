@@ -9,6 +9,18 @@ module.exports = {
         name: 'apiserver',
         version: '0.0',
         port: 13579,
+        redis: {
+          enable: false,
+          host: '127.0.0.1',
+          port: 6379,
+          password: ''
+        },
+        mq: {
+          enable: false,
+          host: 'rabbitLocal',
+          channel: 'main',
+          queue: 'socket'
+        },
         cache: {
           enable: false,
           type: 'memcached',
