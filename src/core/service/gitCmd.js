@@ -15,9 +15,7 @@ const gitClone = async(rootPath, folderName, repoUrl, userName, pwd) => {
     console.log(`clone repo=${repoUrl} rootPath=${rootPath}`)
     git(rootPath).silent(true).clone(repoUrl, (err, result) => {
       if (err) {
-        console.log('err===')
-        console.log(err)
-        reject(err)
+        reject(err.toString())
       } else {
         resolve(result)
       }
@@ -36,13 +34,80 @@ const gitConfig = async(key) => {
     })
   })
 }
-// 當有branch 就做checkout
+// 當有branch 就做checkout commit
 const gitCommit = async(workPath, branch = 'master', info = 'auto commit') => {
   const mygit = git(workPath)
   return new Promise((resolve, reject) => {
     mygit.checkout(branch, () => {
       mygit.add(['.'], () => {
         mygit.commit(['-m', info], (err, result) => {
+          if (err) {
+            reject(err)
+          } else {
+            resolve(result)
+          }
+        })
+      })
+    })
+  })
+}
+// checkout 先將目前的branch 清空恢復再checkout
+const gitCheckout = async(workPath, branch = 'master') => {
+  const mygit = git(workPath)
+  return new Promise((resolve, reject) => {
+    mygit.raw(['reset', '--hard', 'HEAD'], () => {
+      mygit.checkout(branch, (err) => {
+        if (err) {
+          reject(err.toString())
+        } else {
+          resolve()
+        }
+      })
+    })
+  })
+}
+// 當有branch 就做checkout commit
+const gitBranch = async(workPath) => {
+  const mygit = git(workPath)
+  return new Promise((resolve, reject) => {
+    //   HEAD
+    mygit.raw(['rev-parse', '--abbrev-ref', 'HEAD'], (err, result) => {
+      console.log('err==')
+      console.log(err)
+      console.log('result==')
+      console.log(result)
+      if (err) {
+        reject(err)
+      } else {
+        resolve(result.trim())
+      }
+    })
+  })
+}
+// checkout + pull 會先清空異動未commit部份 再進行pull
+const gitPull = async(workPath, branch = 'master') => {
+  const mygit = git(workPath)
+  return new Promise((resolve, reject) => {
+    mygit.raw(['reset', '--hard', 'HEAD'], () => {
+      mygit.checkout(branch, () => {
+        mygit.raw(['pull', 'origin', branch], (err, result) => {
+          if (err) {
+            reject(err)
+          } else {
+            resolve()
+          }
+        })
+      })
+    })
+  })
+}
+// commit + push
+const gitPush = async(workPath, branch = 'master', info = 'auto commit') => {
+  const mygit = git(workPath)
+  return new Promise((resolve, reject) => {
+    mygit.checkout(branch, () => {
+      mygit.add(['.'], () => {
+        mygit.commit([info], (err, result) => {
           if (err) {
             reject(err)
           } else {
@@ -59,28 +124,5 @@ const gitCommit = async(workPath, branch = 'master', info = 'auto commit') => {
     })
   })
 }
-// checkout 與reset都會先將目前的branch 清空恢復再checkout
-const gitReset = async(workPath, branch = 'master') => {
-  const mygit = git(workPath)
-  return new Promise((resolve, reject) => {
-    mygit.raw(['reset', '--hard', 'HEAD'], () => {
-      mygit.checkout(branch, () => {
-        mygit.raw(['pull', 'origin', branch], (err, result) => {
-          if (err) {
-            reject(err)
-          } else {
-            resolve()
-          }
-        })
-      })
-    })
-  })
-}
-const gitPull = async(workPath, branch = 'master') => {
 
-}
-const gitPush = async(workPath, branch = 'master') => {
-
-}
-
-module.exports = { gitClone, gitCommit, gitReset, gitPull, gitPush }
+module.exports = { gitClone, gitCommit, gitCheckout, gitPull, gitPush, gitBranch }

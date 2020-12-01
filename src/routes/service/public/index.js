@@ -3,8 +3,7 @@ const path = require('path')
 const RouteClass = require('../../../core/RouteClass')
 const { apiStart, apiStop } = require('../../../core/service/api')
 const { deploy } = require('../../../core/service/deploy')
-const { gitPull, gitCheckout, gitBranch } = require('../../../core/service/git')
-const { gitClone } = require('../../../core/service/gitCmd')
+const { gitClone, gitPull, gitCheckout, gitPush, gitBranch } = require('../../../core/service/gitCmd')
 // 取得git使用資訊
 const poolFolder = path.resolve(global.config.git.poolFolder)
 const gitUser = global.config.git.user
@@ -18,36 +17,58 @@ class Route extends RouteClass {
     this.get('git/clone/:repoName', async(req, res, next) => {
       console.log('')
       const folderName = req.params.repoName
-      const result = await gitClone(poolFolder, folderName, getRepoUrl(req.params.repoName), gitUser, gitPassword)
-      if (result === '') {
-        this.json(res, { data: `clone ${folderName} 完成` })
+      let err = ''
+      await gitClone(poolFolder, folderName, getRepoUrl(req.params.repoName), gitUser, gitPassword).catch(e => { err = e })
+      if (err === '') {
+        this.json(res, `clone ${folderName} 完成`)
       } else {
-        this.json(res, result)
+        this.json(res, err)
       }
     })
-    this.get('git/pull/:repoName/:branch', (req, res, next) => {
+    this.get('git/pull/:repoName/:branch', async(req, res, next) => {
       const { repoName, branch } = req.params
       const relationPath = `${poolFolder}/${repoName}`
-      gitPull(relationPath, branch, (err, stdout, stderr) => {
-        const resultObj = this.getResultObj('1000', '1001', err, stdout.toString(), stderr)
-        this.json(res, resultObj, resultObj.info)
-      })
+      let err = ''
+      await gitPull(relationPath, branch).catch(e => { err = e })
+      if (err === '') {
+        this.json(res, `pull ${repoName} 完成`)
+      } else {
+        this.json(res, err)
+      }
     })
-    this.get('git/checkout/:repoName/:branch', (req, res, next) => {
+    this.get('git/checkout/:repoName/:branch', async(req, res, next) => {
       const { repoName, branch } = req.params
       const relationPath = `${poolFolder}/${repoName}`
-      gitCheckout(relationPath, branch, (err, stdout, stderr) => {
-        const resultObj = this.getResultObj('1002', '1003', err, stdout.toString(), stderr)
-        this.json(res, resultObj, resultObj.info)
-      })
+      let err = ''
+      await gitCheckout(relationPath, branch).catch(e => { err = e })
+      if (err === '') {
+        this.json(res, `checkout ${repoName} 完成`)
+      } else {
+        this.json(res, err)
+      }
     })
-    this.get('git/branch/:repoName', (req, res, next) => {
+    this.get('git/push/:repoName/:branch', async(req, res, next) => {
+      const { repoName, branch } = req.params
+      const relationPath = `${poolFolder}/${repoName}`
+      const info = req.query.info ? req.query.info : 'auto commit'
+      let err = ''
+      await gitPush(relationPath, branch, info).catch(e => { err = e })
+      if (err === '') {
+        this.json(res, `push ${repoName} 完成`)
+      } else {
+        this.json(res, err)
+      }
+    })
+    this.get('git/branch/:repoName', async(req, res, next) => {
       const { repoName } = req.params
       const relationPath = `${poolFolder}/${repoName}`
-      gitBranch(relationPath, (err, stdout, stderr) => {
-        const resultObj = this.getResultObj('1006', '1007', err, stdout.toString(), stderr)
-        this.json(res, resultObj, resultObj.info)
-      })
+      let err = ''
+      const result = await gitBranch(relationPath).catch(e => { err = e })
+      if (err === '') {
+        this.json(res, result)
+      } else {
+        this.json(res, err)
+      }
     })
     // -- API Server ---------------------
     this.get('api/start', (req, res, next) => {
