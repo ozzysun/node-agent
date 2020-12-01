@@ -44,7 +44,8 @@ module.exports = {
           }
         },
         git: {
-          poolPath: '../',
+          repo: 'your git repo pool',
+          poolFolder: '../',
           user: '',
           password: ''
         }
