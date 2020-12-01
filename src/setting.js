@@ -42,6 +42,11 @@ module.exports = {
             alg: 'HS256',
             expDays: 7
           }
+        },
+        git: {
+          poolPath: '../',
+          user: '',
+          password: ''
         }
       }
     },

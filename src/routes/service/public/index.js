@@ -1,20 +1,33 @@
+const path = require('path')
 // 動態路徑無法build執行檔，以相對路徑導入
 const RouteClass = require('../../../core/RouteClass')
 const { apiStart, apiStop } = require('../../../core/service/api')
 const { deploy } = require('../../../core/service/deploy')
-const { gitClone, gitPull, gitCheckout, gitBranch } = require('../../../core/service/git')
+const { gitPull, gitCheckout, gitBranch } = require('../../../core/service/git')
+const { gitClone } = require('../../../core/service/gitCmd')
+// 取得git使用資訊
+const poolFolder = path.resolve(global.config.git.poolFolder)
+const gitUser = global.config.git.user
+const gitPassword = global.config.git.password
+const getRepoUrl = (repoName) => {
+  return `${global.config.git.repo}/${repoName}.git`
+}
 class Route extends RouteClass {
   routes() {
     // -- Git -------------------------
-    this.get('git/clone/:repoName', (req, res, next) => {
-      gitClone(req.params.repoName, global.config.git.pool, (err, stdout, stderr) => {
-        const resultObj = this.getResultObj('1004', '1005', err, stdout.toString(), stderr)
-        this.json(res, resultObj, resultObj.info)
-      })
+    this.get('git/clone/:repoName', async(req, res, next) => {
+      console.log('')
+      const folderName = req.params.repoName
+      const result = await gitClone(poolFolder, folderName, getRepoUrl(req.params.repoName), gitUser, gitPassword)
+      if (result === '') {
+        this.json(res, { data: `clone ${folderName} 完成` })
+      } else {
+        this.json(res, result)
+      }
     })
     this.get('git/pull/:repoName/:branch', (req, res, next) => {
       const { repoName, branch } = req.params
-      const relationPath = `${global.config.git.pool}/${repoName}`
+      const relationPath = `${poolFolder}/${repoName}`
       gitPull(relationPath, branch, (err, stdout, stderr) => {
         const resultObj = this.getResultObj('1000', '1001', err, stdout.toString(), stderr)
         this.json(res, resultObj, resultObj.info)
@@ -22,7 +35,7 @@ class Route extends RouteClass {
     })
     this.get('git/checkout/:repoName/:branch', (req, res, next) => {
       const { repoName, branch } = req.params
-      const relationPath = `${global.config.git.pool}/${repoName}`
+      const relationPath = `${poolFolder}/${repoName}`
       gitCheckout(relationPath, branch, (err, stdout, stderr) => {
         const resultObj = this.getResultObj('1002', '1003', err, stdout.toString(), stderr)
         this.json(res, resultObj, resultObj.info)
@@ -30,7 +43,7 @@ class Route extends RouteClass {
     })
     this.get('git/branch/:repoName', (req, res, next) => {
       const { repoName } = req.params
-      const relationPath = `${global.config.git.pool}/${repoName}`
+      const relationPath = `${poolFolder}/${repoName}`
       gitBranch(relationPath, (err, stdout, stderr) => {
         const resultObj = this.getResultObj('1006', '1007', err, stdout.toString(), stderr)
         this.json(res, resultObj, resultObj.info)

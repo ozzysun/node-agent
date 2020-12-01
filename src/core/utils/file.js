@@ -91,6 +91,17 @@ const removeFolder = async(targetPath) => {
     })
   })
 }
+const addFolder = async(targetPath) => {
+  return new Promise((resolve, reject) => {
+    fs.ensureDir(targetPath, err => {
+      if (err) {
+        reject(err)
+      } else {
+        resolve(true)
+      }
+    })
+  })
+}
 // -- JSON -------
 const readJSON = async(sourceFile) => {
   // sourceFile is path.resolve path
@@ -144,7 +155,7 @@ const writeYAML = async(filePath, jsonObj = null) => {
 }
 module.exports = {
   readFile, writeFile, isFileExist, loadFolderFiles,
-  copyFolder, removeFolder,
+  copyFolder, removeFolder, addFolder,
   readJSON, writeJSON,
   readYAML, writeYAML
 }
