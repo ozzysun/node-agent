@@ -16,7 +16,15 @@ class Route extends RouteClass {
       console.log('')
       const folderName = req.params.repoName
       let err = ''
-      await gitClone(poolFolder, folderName, getRepoUrl(req.params.repoName), gitUser, gitPassword).catch(e => { err = e })
+      const opt = {
+        rootPath: poolFolder,
+        sub: req.query && req.query.sub ? req.query.sub : null,
+        name: folderName,
+        url: getRepoUrl(req.params.repoName),
+        user: gitUser,
+        pwd: gitPassword
+      }
+      await gitClone(opt).catch(e => { err = e })
       if (err === '') {
         this.json(res, `clone ${folderName} 完成`)
       } else {
@@ -25,7 +33,8 @@ class Route extends RouteClass {
     })
     this.get('git/pull/:repoName/:branch', async(req, res, next) => {
       const { repoName, branch } = req.params
-      const relationPath = `${poolFolder}/${repoName}`
+      const subFolder = req.query && req.query.sub ? req.query.sub : null // 判斷是否有子目錄
+      const relationPath = subFolder !== null ? `${poolFolder}/${subFolder}/${repoName}` : `${poolFolder}/${repoName}`
       let err = ''
       await gitPull(relationPath, branch).catch(e => { err = e })
       if (err === '') {
@@ -36,7 +45,8 @@ class Route extends RouteClass {
     })
     this.get('git/checkout/:repoName/:branch', async(req, res, next) => {
       const { repoName, branch } = req.params
-      const relationPath = `${poolFolder}/${repoName}`
+      const subFolder = req.query && req.query.sub ? req.query.sub : null // 判斷是否有子目錄
+      const relationPath = subFolder !== null ? `${poolFolder}/${subFolder}/${repoName}` : `${poolFolder}/${repoName}`
       let err = ''
       await gitCheckout(relationPath, branch).catch(e => { err = e })
       if (err === '') {
@@ -47,7 +57,8 @@ class Route extends RouteClass {
     })
     this.get('git/push/:repoName/:branch', async(req, res, next) => {
       const { repoName, branch } = req.params
-      const relationPath = `${poolFolder}/${repoName}`
+      const subFolder = req.query && req.query.sub ? req.query.sub : null // 判斷是否有子目錄
+      const relationPath = subFolder !== null ? `${poolFolder}/${subFolder}/${repoName}` : `${poolFolder}/${repoName}`
       const info = req.query.info ? req.query.info : 'auto commit'
       let err = ''
       await gitPush(relationPath, branch, info).catch(e => { err = e })
@@ -59,7 +70,8 @@ class Route extends RouteClass {
     })
     this.get('git/branch/:repoName', async(req, res, next) => {
       const { repoName } = req.params
-      const relationPath = `${poolFolder}/${repoName}`
+      const subFolder = req.query && req.query.sub ? req.query.sub : null // 判斷是否有子目錄
+      const relationPath = subFolder !== null ? `${poolFolder}/${subFolder}/${repoName}` : `${poolFolder}/${repoName}`
       let err = ''
       const result = await gitBranch(relationPath).catch(e => { err = e })
       if (err === '') {

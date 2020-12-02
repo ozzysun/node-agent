@@ -2,18 +2,21 @@
 const path = require('path')
 const git = require('simple-git')
 const { addFolder, removeFolder } = require('../utils/file')
-const gitClone = async(rootPath, folderName, repoUrl, userName, pwd) => {
+// rootPath:pool所在根目錄路徑,sub:子目錄名稱,name:git名稱,url:repo所在路徑(不是完整)
+// user:git使用者帳號 pwd:git使用者密碼 
+const gitClone = async({ rootPath, sub = null, name, url, user, pwd }) => {
   const globalName = await gitConfig('user.name').catch(e => console.log(e))
   // 根目錄若不存在則新增
+  rootPath = sub !== null ? `${rootPath}/${sub}` : rootPath
   await addFolder(rootPath)
-  await removeFolder(`${rootPath}/${folderName}`)
+  await removeFolder(`${rootPath}/${name}`)
   return new Promise((resolve, reject) => {
     // 有使用者名稱或密碼就帶入cloneUrl內
-    if (userName === undefined && globalName !== null) userName = globalName.trim()
-    if (userName !== undefined) repoUrl = pwd !== undefined ? `${userName}:${pwd}@${repoUrl}` : `${userName}@${repoUrl}`
-    if (repoUrl.indexOf('http') === -1) repoUrl = `http://${repoUrl}`
-    console.log(`clone repo=${repoUrl} rootPath=${rootPath}`)
-    git(rootPath).silent(true).clone(repoUrl, (err, result) => {
+    if (user === undefined && globalName !== null) user = globalName.trim()
+    if (user !== undefined) url = pwd !== undefined ? `${user}:${pwd}@${url}` : `${user}@${url}`
+    if (url.indexOf('http') === -1) url = `http://${url}`
+    console.log(`clone repo=${url} rootPath=${rootPath}`)
+    git(rootPath).silent(true).clone(url, (err, result) => {
       if (err) {
         reject(err.toString())
       } else {
