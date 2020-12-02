@@ -3,7 +3,7 @@ const path = require('path')
 const git = require('simple-git')
 const { addFolder, removeFolder } = require('../utils/file')
 // rootPath:pool所在根目錄路徑,sub:子目錄名稱,name:git名稱,url:repo所在路徑(不是完整)
-// user:git使用者帳號 pwd:git使用者密碼 
+// user:git使用者帳號 pwd:git使用者密碼
 const gitClone = async({ rootPath, sub = null, name, url, user, pwd }) => {
   const globalName = await gitConfig('user.name').catch(e => console.log(e))
   // 根目錄若不存在則新增
