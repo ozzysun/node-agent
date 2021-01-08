@@ -11,6 +11,7 @@ const beforeAfter = require('./beforeAfter')
 const jwt = require('./jwt')
 const session = require('express-session')
 const path = require('path')
+const { isFileExist } = require('../utils/file')
 const getRouter = async(port, staticPath = './public', routes, require2) => {
   try {
     // 產生express app 與router, server
@@ -66,13 +67,16 @@ const getRoutes = async(app, routesConfig, require2) => {
     // routesConfig = modifyConfigData(routesConfig)
     for (let i = 0; i < routesConfig.length; i++) {
       const routeData = routesConfig[i]
-      const files = await loadFolderFiles(routeData.dir, 'js', 'name')
-      files.forEach(filename => {
-        const requirePath = `${routeData.dir}/${filename}`
-        const RouteClass = require2(requirePath)
-        const opt = { app, ns: routeData.ns, host: routeData.host, db: routeData.db, filename: requirePath }
-        new RouteClass(opt)
-      })
+      const isExist = await isFileExist(routeData.dir)
+      if (isExist) {
+        const files = await loadFolderFiles(routeData.dir, 'js', 'name')
+        files.forEach(filename => {
+          const requirePath = `${routeData.dir}/${filename}`
+          const RouteClass = require2(requirePath)
+          const opt = { app, ns: routeData.ns, host: routeData.host, db: routeData.db, filename: requirePath }
+          new RouteClass(opt)
+        })
+      }
     }
     return true
   } catch (e) {
